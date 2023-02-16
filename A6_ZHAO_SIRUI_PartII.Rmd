@@ -1,0 +1,51 @@
+---
+title: "BIOL432_Assignment 6"
+author: "SiruiZHAO"
+date: "2023-02-14"
+output: html_document
+---
+
+Part II
+
+First, we need to load library
+```{r}
+library(annotater)
+library(BiocManager)
+library(annotate)
+library(ape)
+library(dplyr)
+```
+
+Then, copy and paste the sequence we found
+```{r}
+Sequences <- "GCCTGATGGAGGGGGATAACTACTGGAAACGGTAGCTAATACCGCATGAC
+CTCGCAAGAGCAAAGTGGGGGACCTTAGGGCCTCACGCCATCGGATGAAC
+CCAGATGGGATTAGCTAGTAGGTGGGGTAATGGCTCACCTAGGCGACGAT
+CCCTAGCTGGTCTGAGAGGATGACCAGCCACACTGGAACTGAGACACGGT
+CCAGACTCCTACGGGAGGCAGCAGTGGGGAATATTGCACAATGGGCGCAA"
+```
+
+```{r}
+#remove special character
+Sequences <- gsub("[\r\n]", "", Sequences)
+```
+
+There will be 33 sequences matched when we choose 5 hits.
+```{r}
+seqBLAST <- blastSequences(paste(Sequences),as = 'data.frame',
+                            hitListSize = 5, timeout = 600)
+```
+```{r}
+nrow(seqBLAST)
+```
+
+Now, we can select some columns and make them a new data frame. To compare these sequences, I sorted the data in decreasing order on Hsp_score. Because it represents the strength of the match, and higher scores mean stronger matches. We can also compare them based on Hsp_evalue, and smaller values generally indicate stronger matches. In hit_def, it shows most of them come from Yersinia but are not human. The Hsp_gaps shows the number of gaps between the query sequence and its match, in which we all got 0 gaps. 
+
+```{r}
+results <- seqBLAST %>%
+  select(Hit_def, Hit_accession, Hit_len, Hsp_score, Hsp_evalue, Hsp_gaps, Hsp_qseq) %>%
+  arrange(desc(Hsp_score), .by_group = TRUE)
+head(results)
+```
+
+Thanks!
